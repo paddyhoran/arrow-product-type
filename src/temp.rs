@@ -99,4 +99,29 @@ mod tests {
         assert_eq!(c.0.len(), 1);
         assert_eq!(c, a);
     }
+
+    #[test]
+    fn test_same_multiple_dimension() {
+        let a = PossibleDimensions::default()
+            .add_dimension("1".to_string(), vec!["a".to_string(), "b".to_string()])
+            .add_dimension("2".to_string(), vec!["a".to_string(), "b".to_string()]);
+        let b = PossibleDimensions::default()
+            .add_dimension("1".to_string(), vec!["a".to_string(), "b".to_string()])
+            .add_dimension("2".to_string(), vec!["a".to_string(), "b".to_string()]);
+
+        let c = combine_dimensions(&a, &b);
+
+        assert_eq!(c.0.len(), 2);
+        assert_eq!(c, a);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_values_differ() {
+        let a = PossibleDimensions::default()
+            .add_dimension("1".to_string(), vec!["a".to_string(), "b".to_string()]);
+        let b = PossibleDimensions::default()
+            .add_dimension("1".to_string(), vec!["a".to_string(), "c".to_string()]);
+        let _ = combine_dimensions(&a, &b);
+    }
 }
