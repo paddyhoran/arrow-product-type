@@ -124,4 +124,32 @@ mod tests {
             .add_dimension("1".to_string(), vec!["a".to_string(), "c".to_string()]);
         let _ = combine_dimensions(&a, &b);
     }
+
+    #[test]
+    fn test_expand() {
+        let a = PossibleDimensions::default()
+            .add_dimension("1".to_string(), vec!["a".to_string(), "b".to_string()])
+            .add_dimension("2".to_string(), vec!["c".to_string(), "d".to_string()]);
+        let b = PossibleDimensions::default()
+            .add_dimension("1".to_string(), vec!["a".to_string(), "b".to_string()])
+            .add_dimension("3".to_string(), vec!["e".to_string(), "f".to_string()]);
+
+        let c = combine_dimensions(&a, &b);
+        assert_eq!(c.0.len(), 3);
+
+        // First dimension
+        let (key, values) = c.0.get_index(0).unwrap();
+        assert_eq!(key, "1");
+        assert_eq!(values.0, vec!["a", "b"]);
+
+        // Second dimension
+        let (key, values) = c.0.get_index(1).unwrap();
+        assert_eq!(key, "2");
+        assert_eq!(values.0, vec!["c", "d"]);
+
+        // Third dimension
+        let (key, values) = c.0.get_index(2).unwrap();
+        assert_eq!(key, "3");
+        assert_eq!(values.0, vec!["e", "f"]);
+    }
 }
