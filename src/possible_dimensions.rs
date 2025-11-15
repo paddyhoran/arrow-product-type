@@ -1,6 +1,14 @@
-use std::ops::Add;
-
+//! Contains the implementation of the `PossibleDimensions` type.
+//!
+//! This type is used to track the current dimensions that are possible
+//! based on the data that has been encountered.
+//!
+//! How dimensions are ordered is encoded in this type.  Currently,
+//! higher cardinality dimensions are push toward the right which should
+//! allow zero copy slicing larger regions of data.
 use indexmap::IndexMap;
+
+
 /// Holds the actual values that are possible within a dimension.
 #[derive(Eq, PartialEq, Clone, Default, Debug)]
 pub struct DimensionValues(Vec<String>);
@@ -17,7 +25,9 @@ impl PossibleDimensions {
     }
 }
 
-fn combine_dimensions(lhs: &PossibleDimensions, rhs: &PossibleDimensions) -> PossibleDimensions {
+/// Combines two instances of `PossibleDimensions` creating a new `PossibleDimenions` that
+/// contains all the dimensions of `lhs` and `lhs`.
+pub(crate) fn combine_dimensions(lhs: &PossibleDimensions, rhs: &PossibleDimensions) -> PossibleDimensions {
     let mut new_possible_dimensions = IndexMap::new();
 
     let mut lhs_iter = lhs.0.iter();
