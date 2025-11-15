@@ -1,8 +1,15 @@
 use bitvec::vec::BitVec;
 
+/// `Flags` is used to track which dimensions a piece of data
+/// "varies by".
+///
+/// The available dimensions themselves are tracked by
+/// `PossibleDimensions`.
 pub struct Flags {
+
     /// Indicates the dimensions that are in use.
     flags: BitVec,
+
     /// Indicates the run-lengths for each dimension.
     run_lengths: Vec<usize>,
 }
