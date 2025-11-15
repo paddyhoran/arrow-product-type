@@ -18,7 +18,6 @@ pub struct DimensionValues(Vec<String>);
 pub struct PossibleDimensions(IndexMap<String, DimensionValues>);
 
 impl PossibleDimensions {
-    #[cfg(test)]
     pub fn add_dimension(mut self, name: String, values: Vec<String>) -> Self {
         self.0.insert(name, DimensionValues(values));
         self

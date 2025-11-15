@@ -7,6 +7,14 @@ pub struct Flags {
     run_lengths: Vec<usize>,
 }
 
+impl Default for Flags {
+    fn default() -> Self {
+        let mut flags = BitVec::with_capacity(1);
+        flags.push(true);
+        Self { flags, run_lengths: vec![0] }
+    }
+}
+
 /// Returns a run-length `Vec` indicating the run-lengths for each dimension represented in
 /// `flags` / `sizes`.
 ///
