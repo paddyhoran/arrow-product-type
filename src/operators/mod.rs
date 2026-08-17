@@ -1,7 +1,7 @@
 mod mul;
 
-pub use mul::*;
 use arrow_array::Array;
+pub use mul::*;
 
 use crate::data::Values;
 use arrow_buffer::Buffer;

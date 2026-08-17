@@ -1,11 +1,15 @@
+use std::collections::HashMap;
+
 use bitvec::vec::BitVec;
+
+use crate::granularity::possible_dimensions::PossibleDimensions;
 
 /// `Flags` is used to track which dimensions a piece of data
 /// "varies by".
 ///
 /// The available dimensions themselves are tracked by
 /// `PossibleDimensions`.
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Flags {
     /// Indicates the dimensions that are in use.
     flags: BitVec,
@@ -40,6 +44,36 @@ impl Flags {
     pub fn broadcast(&self, other: &Self, sizes: &[usize]) -> Self {
         let flags = self.flags.clone() | other.flags.clone();
         let run_lengths = compute_run_lengths(&flags, sizes);
+        Self { flags, run_lengths }
+    }
+
+    /// Expands flags to be correct for `new_possible_dimensions`.
+    ///
+    /// This method assumes that `current_dimensions` has already been validated
+    /// as subset of `new_dimensions`.
+    pub fn expand(
+        &self,
+        current_dimensions: &PossibleDimensions,
+        new_dimensions: &PossibleDimensions,
+    ) -> Self {
+        let offsets: HashMap<&String, usize> = current_dimensions
+            .dim_names()
+            .enumerate()
+            .map(|(idx, name)| (name, idx))
+            .collect();
+
+        let mut flags = BitVec::with_capacity(new_dimensions.n_dims());
+        let mut run_lengths = Vec::with_capacity(new_dimensions.n_dims());
+        for dim_name in new_dimensions.dim_names() {
+            if let Some(offset) = offsets.get(dim_name) {
+                flags.push(self.flags[*offset]);
+                run_lengths.push(self.run_lengths[*offset]);
+            } else {
+                flags.push(false);
+                run_lengths.push(0);
+            }
+        }
+
         Self { flags, run_lengths }
     }
 }

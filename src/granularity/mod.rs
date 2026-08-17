@@ -1,3 +1,5 @@
+use std::ops::BitOr;
+
 use flags::Flags;
 use possible_dimensions::PossibleDimensions;
 
@@ -8,7 +10,7 @@ mod possible_dimensions;
 
 /// Holds meta-data that allows the actual data
 /// array to be interpreted.
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Granularity {
     /// The dimensions that the data actually "varies by".
     flags: Flags,
@@ -50,7 +52,15 @@ impl Granularity {
         self.flags.run_length(idx)
     }
 
-    pub fn broadcast(&self, other: &Self) -> Self {
+    /// Broadcasts `self` and `other` returning a `Granularity` that
+    /// is suitable for the result of a broadcasting operation bwtween
+    /// `self` and `other`.
+    ///
+    /// This method first merges the possible dimensions and then merges
+    /// the flags.
+    fn broadcast(&self, other: &Self) -> Self {
+        // If the possible dimensions are equal then the only
+        // difference is in the flags so we broadcast them.
         if self.dims == other.dims {
             let flags = self.flags.broadcast(&other.flags, &self.dims.sizes());
             Self {
@@ -58,7 +68,15 @@ impl Granularity {
                 dims: self.dims.clone(),
             }
         } else {
-            todo!()
+            // If the possible dimensions are not equal we must make them equal.
+            let possible_dimensions = &self.dims | &other.dims;
+            let flags = self.flags.expand(&self.dims, &possible_dimensions);
+            let other_flags = other.flags.expand(&self.dims, &possible_dimensions);
+            let new_flags = flags.broadcast(&other_flags, &possible_dimensions.sizes());
+            Self {
+                flags: new_flags,
+                dims: possible_dimensions,
+            }
         }
     }
 
@@ -99,5 +117,13 @@ impl Granularity {
             .map(|(run_length, index)| run_length * index)
             .reduce(|a, b| a + b)
             .unwrap_or(0)
+    }
+}
+
+impl BitOr for &Granularity {
+    type Output = Granularity;
+
+    fn bitor(self, other: &Granularity) -> Granularity {
+        self.broadcast(other)
     }
 }

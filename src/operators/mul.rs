@@ -7,7 +7,9 @@ use super::{array_binary_op, scalar_binary_op};
 ///
 /// This is often called "broadcasting".  Whether it is correct to broadcast
 /// depends on what the data represents.
-pub fn mul(lhs: &Data, rhs: &Data) -> Data {
+pub fn mul_with_broadcasting(lhs: &Data, rhs: &Data) -> Data {
+    let granularity = lhs.granularity() | rhs.granularity();
+    dbg!(&granularity);
     todo!()
 }
 
@@ -44,6 +46,20 @@ pub fn mul_scalar(data: &Data, amount: f64) -> Data {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_mul_with_broadcasting() {
+        let data_1 = Data::new_from_iter(
+            "Dim 1".to_string(),
+            [("A".to_string(), 3.0), ("B".to_string(), 4.0)].into_iter(),
+        );
+        let data_2 = Data::new_from_iter(
+            "Dim 2".to_string(),
+            [("X".to_string(), 5.0), ("Y".to_string(), 3.0)].into_iter(),
+        );
+        let data_3 = mul_with_broadcasting(&data_1, &data_2);
+        assert_eq!(data_3.granularity.size(), 2);
+    }
 
     #[test]
     fn test_mul_strict() {

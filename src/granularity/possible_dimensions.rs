@@ -7,7 +7,8 @@
 //! higher cardinality dimensions are push toward the right which should
 //! allow zero copy slicing larger regions of data.
 
-use indexmap::IndexMap;
+use indexmap::{IndexMap, map::Keys};
+use std::ops::BitOr;
 
 /// Holds the actual values that are possible within a dimension.
 #[derive(Eq, PartialEq, Clone, Default, Debug)]
@@ -41,14 +42,29 @@ impl PossibleDimensions {
         self
     }
 
+    pub fn dim_names(&self) -> Keys<'_, String, DimensionValues> {
+        self.0.keys()
+    }
+
+    pub fn n_dims(&self) -> usize {
+        self.0.len()
+    }
+
     pub fn sizes(&self) -> Vec<usize> {
         self.0.values().map(|v| v.0.len()).collect()
     }
 }
 
+impl BitOr for &PossibleDimensions {
+    type Output = PossibleDimensions;
+
+    fn bitor(self, other: &PossibleDimensions) -> PossibleDimensions {
+        combine_dimensions(&self, &other)
+    }
+}
+
 /// Combines two instances of `PossibleDimensions` creating a new `PossibleDimenions` that
 /// contains all the dimensions of `lhs` and `lhs`.
-#[allow(dead_code)]
 pub(crate) fn combine_dimensions(
     lhs: &PossibleDimensions,
     rhs: &PossibleDimensions,
